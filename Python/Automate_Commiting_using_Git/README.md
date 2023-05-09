@@ -1,28 +1,29 @@
 # Automate commit using Git
 
 
-Are you tired of adding, committing and pushing you code everytime you change it? If so, you can use this Python script to automate this boring stuff.
+Are you tired of adding, committing and pushing your code everytime you change it? If so, you can use this Python script to automate this boring stuff.
 This code is the simplest one to automate the task.
 
 ## Understanding the code
 
-![image](https://snipboard.io/cM59xz.jpg)
+![image](https://snipboard.io/0Rk6qz.jpg)
 
 ```
 import subprocess
+import sys
 ```
 
-The subprocess module allows us to spawn processes, connect to their input/output/error pipes, and obtain their return codes.
+The subprocess module allows us to spawn processes, connect to their input/output/error pipes, and obtain their return codes. sys module provides access to some variables used or maintained by the interpreter and to functions that interact strongly with the interpreter.
 
 ```
-result = subprocess.run(["git", "add", "."])
+result = subprocess.run(["git", "add", ":/"])
 
 ```
 
-This line of code stages all changes made to files in the current directory using the `git add` command.
+This line of code stages all changes made to files in the root directory of the repository, no matter what subdirectory the user is in, using the git add command.
 
 ```
-message = input("Enter commit message (or press Enter to use default): ")
+message = input("Enter commit message (or press Enter to use default 'Auto commit'): ")
 
 ```
 
@@ -36,11 +37,24 @@ remote = input("Enter remote name (or press Enter to use default 'origin'): ")
 This line of code prompts the user to enter a remote name for the repository. If the user enters nothing and presses Enter, the remote name will default to "origin".
 
 ```
-branchname = input("Enter branch name (or press Enter to use default 'main'): ")
+result = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True)
 
 ```
 
-This line of code prompts the user to enter a branch name to which the changes should be pushed. If the user enters nothing and presses Enter, the branch name will default to "main".
+This line of code gets the name of the current branch using the git rev-parse --abbrev-ref HEAD command.
+
+```
+branchname = input("Enter branch name (or press Enter to use default '{}'): ".format(result.stdout.strip()))
+
+```
+This line of code prompts the user to enter a branch name to which the changes should be pushed. If the user enters nothing and presses Enter, the changes will be pushed to the current branch.
+
+```
+if not branchname:
+    branchname = result.stdout.strip()
+
+```
+If the user enters nothing and presses Enter, the changes will be pushed to the current branch.
 
 ```
 result = subprocess.run(["git", "commit", "-m", message])
@@ -55,7 +69,7 @@ result = subprocess.run(["git", "push", remote, branchname])
 Finally, this line of code pushes the committed changes to the specified branch and remote.
 
 ## Usage
-
 To use this script, simply run it in the directory where your git repository is located. Follow the prompts to enter a commit message, remote name, and branch name, or press Enter to accept the defaults.
+
 ## Note
 > This script assumes that you have already initialized a git repository in the directory where it is being run. If you have not done so, you will need to initialize a git repository using git init before using this script.
